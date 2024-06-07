@@ -111,9 +111,20 @@ def handle_file_selection():
     file_selection_dialog = tk.Toplevel()
     file_selection_dialog.title("Select File to Download")
 
+    # Create a frame to hold the listbox and scrollbar
+    frame = tk.Frame(file_selection_dialog)
+    frame.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
+
     # Create a listbox to display the files
-    file_listbox = tk.Listbox(file_selection_dialog, width=50)
-    file_listbox.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
+    file_listbox = tk.Listbox(frame, width=50)
+    file_listbox.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+    # Create a scrollbar
+    scrollbar = tk.Scrollbar(frame, orient=tk.VERTICAL, command=file_listbox.yview)
+    scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+
+    # Configure the listbox to use the scrollbar
+    file_listbox.config(yscrollcommand=scrollbar.set)
 
     # Add files to the listbox
     for filename in files:
@@ -203,6 +214,9 @@ def list_files():
 # Create the main application window
 app = tk.Tk()
 app.title("File Client")
+
+# Set the width of the window
+app.geometry("400x200")
 
 # Create and place the Connect button
 connect_btn = tk.Button(app, text="Connect to Server", command=connect_to_server)
