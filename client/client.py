@@ -5,9 +5,9 @@ from tkinter import filedialog, messagebox  # Import specific modules from tkint
 import time  # Import the time module to use time-related functions
 import threading  # Import the threading module to handle multiple threads
 
-# Define server address and port
-SERVER_HOST = '127.0.0.1'  # Localhost (your computer)
-SERVER_PORT = 5001  # Port number to connect to the server
+# Default server address and port
+DEFAULT_SERVER_HOST = '127.0.0.1'  # Localhost (your computer)
+DEFAULT_SERVER_PORT = 5001  # Port number to connect to the server
 BUFFER_SIZE = 4096  # Buffer size for data transfer
 SEPARATOR = "<SEPARATOR>"  # Separator used to separate parts of a message
 
@@ -18,10 +18,15 @@ def connect_to_server(show_message=True):
     """Function to connect to the server"""
     global client_socket
     try:
+        # Get the server address and port from user input or use default values
+        server_host = server_ip_entry.get() or DEFAULT_SERVER_HOST
+        server_port = int(server_port_entry.get() or DEFAULT_SERVER_PORT)
+        
         # Create a new socket object
         client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         # Connect to the server
-        client_socket.connect((SERVER_HOST, SERVER_PORT))
+        client_socket.connect((server_host, server_port))
+        
         # Show a success message if show_message is True
         if show_message:
             messagebox.showinfo("Success", "Connected to the server.")
@@ -158,10 +163,10 @@ def download_selected_file(filename):
         # Receive response from the server
         response = client_socket.recv(BUFFER_SIZE).decode()
         print("Received response from server:", response)
-        
+
         # Print the selected filename
         print("User selected file:", filename)
-        
+
         if response.startswith("File not found"):
             # Show error if file not found
             messagebox.showerror("Error", response)
@@ -216,7 +221,15 @@ app = tk.Tk()
 app.title("File Client")
 
 # Set the width of the window
-app.geometry("400x200")
+app.geometry("400x400")
+
+# Create and place the input fields for server IP and port
+tk.Label(app, text="Server IP:").pack()
+server_ip_entry = tk.Entry(app)
+server_ip_entry.pack()
+tk.Label(app, text="Server Port:").pack()
+server_port_entry = tk.Entry(app)
+server_port_entry.pack()
 
 # Create and place the Connect button
 connect_btn = tk.Button(app, text="Connect to Server", command=connect_to_server)
@@ -230,5 +243,5 @@ upload_btn.pack(pady=10)
 download_btn = tk.Button(app, text="Download File", command=download_file)
 download_btn.pack(pady=10)
 
-# Start the Tkinter event loop
+# Run the main event loop
 app.mainloop()

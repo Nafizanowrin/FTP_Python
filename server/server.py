@@ -4,9 +4,9 @@ import os  # Import os module for file system operations
 import tkinter as tk  # Import tkinter module for creating the graphical user interface (GUI)
 from tkinter import messagebox  # Import messagebox from tkinter for showing dialog boxes
 
-# Define the server address and port
-SERVER_HOST = '0.0.0.0'  # Listen on all available network interfaces
-SERVER_PORT = 5001  # Port to listen on
+# Define default server address and port
+DEFAULT_SERVER_HOST = '0.0.0.0'  # Listen on all available network interfaces
+DEFAULT_SERVER_PORT = 5001  # Default port to listen on
 BUFFER_SIZE = 4096  # Size of the buffer for receiving data
 SEPARATOR = "<SEPARATOR>"  # Separator used for splitting command strings
 
@@ -14,30 +14,45 @@ SEPARATOR = "<SEPARATOR>"  # Separator used for splitting command strings
 FILES_DIR = os.path.join(os.path.dirname(__file__), 'files')  # Path to the 'files' directory
 os.makedirs(FILES_DIR, exist_ok=True)  # Create the directory if it doesn't exist
 
+
 class ServerGUI:
     def __init__(self, root):
         # Initialize the root window
         self.root = root
         # Set the window title
         self.root.title("File Server")
-        
+
+        # IP address label and entry
+        self.ip_label = tk.Label(root, text="Server IP:")
+        self.ip_label.pack(pady=5)
+        self.ip_entry = tk.Entry(root)
+        self.ip_entry.pack(pady=5)
+        self.ip_entry.insert(tk.END, DEFAULT_SERVER_HOST)  # Default value
+
+        # Port number label and entry
+        self.port_label = tk.Label(root, text="Server Port:")
+        self.port_label.pack(pady=5)
+        self.port_entry = tk.Entry(root)
+        self.port_entry.pack(pady=5)
+        self.port_entry.insert(tk.END, str(DEFAULT_SERVER_PORT))  # Default value
+
         # Button to start the server
         self.start_btn = tk.Button(root, text="Start Server", command=self.start_server)
         # Pack the button with padding
         self.start_btn.pack(pady=5)
-        
+
         # Button to stop the server, initially disabled
         self.stop_btn = tk.Button(root, text="Stop Server", command=self.stop_server, state=tk.DISABLED)
         # Pack the button with padding
         self.stop_btn.pack(pady=5)
-        
+
         # Listbox to display received files
         self.file_listbox = tk.Listbox(root, width=50)
         # Pack the listbox with padding
         self.file_listbox.pack(pady=20)
         # Bind double-click event to file selection
         self.file_listbox.bind('<Double-1>', self.on_file_select)
-        
+
         # List to keep track of received files
         self.files_received = []
         # Server socket, initially None
@@ -68,7 +83,7 @@ class ServerGUI:
     def download_file(self, filename):
         # Get the full path of the file
         filepath = os.path.join(FILES_DIR, filename)
-        
+
         # Open the file in binary read mode
         with open(filepath, "rb") as f:
             while True:
@@ -190,14 +205,18 @@ class ServerGUI:
             # If the server is already running, return
             return
 
+        # Get the IP address and port from the user inputs
+        server_host = self.ip_entry.get() or DEFAULT_SERVER_HOST
+        server_port = int(self.port_entry.get()) if self.port_entry.get() else DEFAULT_SERVER_PORT
+
         # Create a new socket
         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         # Bind the socket to the address and port
-        self.server_socket.bind((SERVER_HOST, SERVER_PORT))
+        self.server_socket.bind((server_host, server_port))
         # Start listening for connections
         self.server_socket.listen(5)
         # Print server status
-        print(f"Server listening on {SERVER_HOST}:{SERVER_PORT}")
+        print(f"Server listening on {server_host}:{server_port}")
 
         # Create a thread to accept connections
         self.accept_thread = threading.Thread(target=self.accept_connections)
@@ -224,6 +243,7 @@ class ServerGUI:
         self.stop_btn.config(state=tk.DISABLED)
         # Print server status
         print("Server stopped.")
+
 
 if __name__ == "__main__":
     # Create the root window
