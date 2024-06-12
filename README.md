@@ -12,7 +12,7 @@
    2 -> tkinter </p>
 <br>
 <h1>How to run the Project<h1>
-<p>Firstly Begin by navigating to the project directory. Next, execute server.py in your terminal/cmd using the command: python server.py. This will launch a server GUI in your window. Then, execute client.py in your terminal/cmd using the command: python client.py. This will open a client GUI in your window.</p>
+<p><s>Firstly Begin by navigating to the project directory. Next, execute server.py in your terminal/cmd using the command: python server.py. This will launch a server GUI in your window. Then, execute client.py in your terminal/cmd using the command: python client.py. This will open a client GUI in your window.</s></p>
 <br>
 <h1>Server GUI Description:</h1>
 <p>In order to initiate the server, the user must input a IP Address & Port Number. The server can be launched by selecting the "Start Server" button. The server GUI will display some buttons to make relevent specific actions. Additionally, the server GUI allows users to delete files from the server. All server activities will be visible in the status bar of the server GUI. To stop the server, users can click on the "Stop Server" button.</p>
