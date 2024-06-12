@@ -343,7 +343,7 @@ app.title("File Client")
 app.geometry("400x400")
 
 # Set the background color of the root window
-app.configure(bg="#ffd8a6")  # Example: Light blue background
+app.configure(bg="#a6daff")  # Example: Light blue background
 
 # Get the absolute path to the image
 icon_path = os.path.join(os.path.dirname(__file__), "logo.png")

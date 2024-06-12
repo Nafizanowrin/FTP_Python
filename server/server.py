@@ -15,6 +15,7 @@ SEPARATOR = "<SEPARATOR>"  # Separator used for splitting command strings
 FILES_DIR = os.path.join(os.path.dirname(__file__), 'files')  # Path to the 'files' directory
 os.makedirs(FILES_DIR, exist_ok=True)  # Create the directory if it doesn't exist
 
+
 class ServerGUI:
     def __init__(self, root):
         # Initialize the root window
@@ -190,7 +191,7 @@ class ServerGUI:
                     else:
                         # If the file is not found, send error message
                         client_socket.send("File not found".encode())
-                
+
                 elif command.startswith("DELETE"):
                     # Split the command to get the filename
                     _, filename = command.split(SEPARATOR)
@@ -208,7 +209,7 @@ class ServerGUI:
                     except Exception as e:
                         # Send error message if deletion fails
                         client_socket.send(f"Error deleting file: {str(e)}".encode())
-                    
+
         except Exception as e:
             # Print any exceptions
             print(f"Error: {e}")
@@ -310,7 +311,8 @@ class ServerGUI:
             file_listbox.insert(tk.END, "No files available")
 
         # Create a delete button
-        delete_button = tk.Button(files_window, text="Delete Selected File", command=lambda: self.delete_file(file_listbox))
+        delete_button = tk.Button(files_window, text="Delete Selected File",
+                                  command=lambda: self.delete_file(file_listbox))
         delete_button.pack(pady=10)
 
     def delete_file(self, file_listbox):
@@ -337,6 +339,7 @@ class ServerGUI:
                 except Exception as e:
                     # Show error message if deletion fails
                     messagebox.showerror("Error", f"Could not delete file '{filename}'.\n{str(e)}")
+
 
 if __name__ == "__main__":
     # Create the root window
