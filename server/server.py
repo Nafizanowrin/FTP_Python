@@ -234,24 +234,27 @@ class ServerGUI:
         server_host = self.ip_entry.get() or DEFAULT_SERVER_HOST
         server_port = int(self.port_entry.get()) if self.port_entry.get() else DEFAULT_SERVER_PORT
 
-        # Create a new socket
-        self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        # Bind the socket to the address and port
-        self.server_socket.bind((server_host, server_port))
-        # Start listening for connections
-        self.server_socket.listen(5)
-        # Print server status
-        print(f"Server listening on {server_host}:{server_port}")
+        try:
+            self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.server_socket.bind((server_host, server_port))
+            self.server_socket.listen(5)
+            print(f"Server listening on {server_host}:{server_port}")
 
-        # Create a thread to accept connections
-        self.accept_thread = threading.Thread(target=self.accept_connections)
-        # Start the thread
-        self.accept_thread.start()
+            self.accept_thread = threading.Thread(target=self.accept_connections)
+            self.accept_thread.start()
 
-        # Disable the start button
-        self.start_btn.config(state=tk.DISABLED)
-        # Enable the stop button
-        self.stop_btn.config(state=tk.NORMAL)
+            self.start_btn.config(state=tk.DISABLED)
+            self.stop_btn.config(state=tk.NORMAL)
+        except OSError as e:
+            # Handle invalid IP address or port error
+            if e.errno == 10049:  # Windows specific error code for invalid address context
+                messagebox.showerror("Server Error", "The requested address is not valid in its context.")
+            else:
+                messagebox.showerror("Server Error", f"An error occurred: {str(e)}")
+            self.server_socket = None  # Reset server socket if an error occurs
+        except Exception as e:
+            messagebox.showerror("Server Error", f"An unexpected error occurred: {str(e)}")
+            self.server_socket = None  # Reset server socket if an error occurs
 
     def stop_server(self):
         if self.server_socket:

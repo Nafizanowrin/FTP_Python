@@ -68,6 +68,11 @@ def connect_to_server(show_message=True):
         # Show a success message if show_message is True
         if show_message:
             messagebox.showinfo("Success", "Connected to the server.")
+
+        # Enable the logout button and disable the connect button
+        connect_btn.config(state=tk.DISABLED)
+        logout_btn.config(state=tk.NORMAL)
+        
     except ConnectionRefusedError:
         # Show an error message if connection is refused
         messagebox.showerror("Connection Error", "The server is not started yet. Please start the server first.")
@@ -280,7 +285,7 @@ def show_local_files():
     file_window.title("Local Files")
 
     # Create a Listbox to show the files
-    file_listbox = tk.Listbox(file_window, selectmode=tk.SINGLE)
+    file_listbox = tk.Listbox(file_window, width=50, selectmode=tk.SINGLE)
     file_listbox.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
 
     # Add files to the Listbox
@@ -315,6 +320,22 @@ def delete_local_file(file_listbox):
     except Exception as e:
         messagebox.showerror("Error", f"An error occurred while deleting the file: {str(e)}")
 
+def logout():
+    """Function to disconnect from the server"""
+    global client_socket
+    if client_socket:
+        try:
+            client_socket.close()  # Close the socket connection
+            client_socket = None
+            messagebox.showinfo("Success", "Disconnected from the server.")
+        except socket.error as e:
+            messagebox.showerror("Error", f"An error occurred while disconnecting: {str(e)}")
+
+        # Enable the connect button and disable the logout button
+        connect_btn.config(state=tk.NORMAL)
+        logout_btn.config(state=tk.DISABLED)
+
+
 # Create the main application window
 app = tk.Tk()
 app.title("File Client")
@@ -345,6 +366,10 @@ download_btn.pack(pady=10)
 # create and place the "Show Available File" button
 show_files_button = tk.Button(app, text="Show Available Files", command=show_local_files)
 show_files_button.pack(pady=10)
+
+# create and place the logout button
+logout_btn = tk.Button(app, text="Logout", command=logout)
+logout_btn.pack(pady=10)
 
 # Run the main event loop
 app.mainloop()
