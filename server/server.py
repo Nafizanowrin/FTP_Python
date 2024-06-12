@@ -20,11 +20,16 @@ class ServerGUI:
     def __init__(self, root):
         # Initialize the root window
         self.root = root
+        
+        # Set the window icon
+        icon_path = os.path.join(os.path.dirname(__file__), "logo.png")
+        root.iconphoto(False, PhotoImage(file=icon_path))
+
         # Set the window title
         self.root.title("File Server")
 
         # Set the background color of the root window
-        self.root.configure(bg="#ADD8E6")  # Example: Light blue background
+        self.root.configure(bg="#ADD8E6")
 
         # IP address label and entry
         self.ip_label = tk.Label(root, text="Server IP:")
@@ -59,8 +64,6 @@ class ServerGUI:
         self.file_listbox = tk.Listbox(root, width=50)
         # Pack the listbox with padding
         self.file_listbox.pack(pady=20)
-        # Bind double-click event to file selection
-        self.file_listbox.bind('<Double-1>', self.on_file_select)
 
         # List to keep track of received files
         self.files_received = []
@@ -69,48 +72,11 @@ class ServerGUI:
         # Thread for accepting connections, initially None
         self.accept_thread = None
 
-        # Set the window icon
-        icon_path = os.path.join(os.path.dirname(__file__), "logo.png")
-        root.iconphoto(False, PhotoImage(file=icon_path))
-
     def add_file(self, filename):
         # Add the filename to the listbox
         self.file_listbox.insert(tk.END, filename + "\n")
         # Add the filename to the received files list
         self.files_received.append(filename)
-
-    def on_file_select(self, event):
-        # Get the selected item in the listbox
-        selection = event.widget.curselection()
-        if selection:
-            # Get the index of the selected item
-            index = selection[0]
-            # Get the filename from the list
-            filename = self.files_received[index]
-            # Ask if the user wants to download the file
-            response = messagebox.askyesno("Download File", f"Do you want to download '{filename}'?")
-            if response:
-                # If yes, download the file
-                self.download_file(filename)
-
-    def download_file(self, filename):
-        # Get the full path of the file
-        filepath = os.path.join(FILES_DIR, filename)
-
-        # Open the file in binary read mode
-        with open(filepath, "rb") as f:
-            while True:
-                # Receive bytes from the client
-                bytes_read = self.client_socket.recv(BUFFER_SIZE)
-                if not bytes_read:
-                    # If no more bytes are received, break the loop
-                    break
-                # Write the received bytes to the file
-                f.write(bytes_read)
-        # Show success message
-        messagebox.showinfo("Success", f"File '{filename}' downloaded successfully.")
-        # Close the client socket
-        self.client_socket.close()
 
     def handle_client(self, client_socket):
         # Assign the client socket to an instance variable
@@ -133,6 +99,7 @@ class ServerGUI:
 
                     # Get the full path of the file
                     filepath = os.path.join(FILES_DIR, filename)
+                    
                     # Open the file in binary write mode
                     with open(filepath, "wb") as f:
                         # Initialize bytes received counter
@@ -192,24 +159,6 @@ class ServerGUI:
                         # If the file is not found, send error message
                         client_socket.send("File not found".encode())
 
-                elif command.startswith("DELETE"):
-                    # Split the command to get the filename
-                    _, filename = command.split(SEPARATOR)
-                    # Get the full path of the file
-                    filepath = os.path.join(FILES_DIR, filename)
-                    try:
-                        if os.path.exists(filepath):
-                            # If the file exists, delete it
-                            os.remove(filepath)
-                            # Send success message to the client
-                            client_socket.send(f"{filename} deleted successfully".encode())
-                        else:
-                            # If the file is not found, send error message
-                            client_socket.send("File not found".encode())
-                    except Exception as e:
-                        # Send error message if deletion fails
-                        client_socket.send(f"Error deleting file: {str(e)}".encode())
-
         except Exception as e:
             # Print any exceptions
             print(f"Error: {e}")
@@ -242,8 +191,11 @@ class ServerGUI:
         server_port = int(self.port_entry.get()) if self.port_entry.get() else DEFAULT_SERVER_PORT
 
         try:
+            # This line creates a new socket object using the socket module.
             self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            # This line binds the socket to a specific IP address and port number.
             self.server_socket.bind((server_host, server_port))
+
             self.server_socket.listen(5)
             print(f"Server listening on {server_host}:{server_port}")
 
@@ -252,6 +204,7 @@ class ServerGUI:
 
             self.start_btn.config(state=tk.DISABLED)
             self.stop_btn.config(state=tk.NORMAL)
+
         except OSError as e:
             # Handle invalid IP address or port error
             if e.errno == 10049:  # Windows specific error code for invalid address context
@@ -259,6 +212,7 @@ class ServerGUI:
             else:
                 messagebox.showerror("Server Error", f"An error occurred: {str(e)}")
             self.server_socket = None  # Reset server socket if an error occurs
+
         except Exception as e:
             messagebox.showerror("Server Error", f"An unexpected error occurred: {str(e)}")
             self.server_socket = None  # Reset server socket if an error occurs
