@@ -335,36 +335,15 @@ def logout():
         connect_btn.config(state=tk.NORMAL)
         logout_btn.config(state=tk.DISABLED)
 
-# Function to create rounded buttons
-def create_rounded_button(canvas, x, y, width, height, text, command=None):
-    bg_color = "#1E90FF"
-    fg_color = "#FFFFFF"
-    active_bg_color = "#1C86EE"
-    radius = 20
-    points = [
-        x + radius, y,
-        x + width - radius, y,
-        x + width, y + radius,
-        x + width, y + height - radius,
-        x + width - radius, y + height,
-        x + radius, y + height,
-        x, y + height - radius,
-        x, y + radius
-    ]
-    button_bg = canvas.create_polygon(points, smooth=True, fill=bg_color, outline=bg_color)
-    button_text = canvas.create_text(x + width / 2, y + height / 2, text=text, fill=fg_color, font=("Helvetica", 12), activefill=active_bg_color)
-
-    if command:
-        canvas.tag_bind(button_bg, "<Button-1>", lambda e: command())
-        canvas.tag_bind(button_text, "<Button-1>", lambda e: command())
-
-
 # Create the main application window
 app = tk.Tk()
 app.title("File Client")
 
 # Set the width of the window
 app.geometry("400x400")
+
+# Set the background color of the root window
+app.configure(bg="#ffd8a6")  # Example: Light blue background
 
 # Get the absolute path to the image
 icon_path = os.path.join(os.path.dirname(__file__), "logo.png")
@@ -376,10 +355,10 @@ except Exception as e:
     print(f"Error loading icon: {e}")
 
 # Create and place the input fields for server IP and port
-tk.Label(app, text="Server IP:").pack()
+tk.Label(app, text="Server IP:").pack(pady=5)
 server_ip_entry = tk.Entry(app)
 server_ip_entry.pack()
-tk.Label(app, text="Server Port:").pack()
+tk.Label(app, text="Server Port:").pack(pady=5)
 server_port_entry = tk.Entry(app)
 server_port_entry.pack()
 

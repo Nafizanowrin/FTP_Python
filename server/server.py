@@ -22,6 +22,9 @@ class ServerGUI:
         # Set the window title
         self.root.title("File Server")
 
+        # Set the background color of the root window
+        self.root.configure(bg="#ADD8E6")  # Example: Light blue background
+
         # IP address label and entry
         self.ip_label = tk.Label(root, text="Server IP:")
         self.ip_label.pack(pady=5)
