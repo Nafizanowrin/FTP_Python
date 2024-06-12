@@ -4,6 +4,7 @@ import tkinter as tk  # Import the tkinter module to create a GUI
 from tkinter import filedialog, messagebox  # Import specific modules from tkinter
 import time  # Import the time module to use time-related functions
 import threading  # Import the threading module to handle multiple threads
+import re
 
 # Default server address and port
 DEFAULT_SERVER_HOST = '127.0.0.1'  # Localhost (your computer)
@@ -14,13 +15,53 @@ SEPARATOR = "<SEPARATOR>"  # Separator used to separate parts of a message
 # Global variable for client socket
 client_socket = None  # Initialize client socket as None
 
+import socket
+import re
+from tkinter import messagebox
+
+def is_valid_ip(ip):
+    """Validate an IPv4 address."""
+    # Pattern to match IPv4 addresses
+    pattern = re.compile(r"^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$")
+    # Check if the pattern matches and each segment is between 0 and 255
+    return pattern.match(ip) is not None and all(0 <= int(num) <= 255 for num in ip.split('.'))
+
+def is_valid_port(port):
+    """Validate a port number."""
+    try:
+        # Convert port to an integer and check if it's in the valid range
+        port_num = int(port)
+        return 1 <= port_num <= 65535
+    except ValueError:
+        # Return False if conversion to integer fails
+        return False
+
 def connect_to_server(show_message=True):
     """Function to connect to the server"""
     global client_socket
+    # Get the server address and port from user input
+    server_host = server_ip_entry.get()
+    server_port = server_port_entry.get()
+    
+    # Validate server IP and port
+    if not server_host or not server_port:
+        # Show error if either IP or port is not provided
+        messagebox.showerror("Input Error", "Server IP and Port must be provided.")
+        return
+    
+    if not is_valid_ip(server_host):
+        # Show error if IP address format is invalid
+        messagebox.showerror("Input Error", "Invalid IP address format.")
+        return
+    
+    if not is_valid_port(server_port):
+        # Show error if port number is out of valid range
+        messagebox.showerror("Input Error", "Port number must be between 1 and 65535.")
+        return
+
     try:
-        # Get the server address and port from user input or use default values
-        server_host = server_ip_entry.get() or DEFAULT_SERVER_HOST
-        server_port = int(server_port_entry.get() or DEFAULT_SERVER_PORT)
+        # Convert port to an integer
+        server_port = int(server_port)
         
         # Create a new socket object
         client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -33,6 +74,12 @@ def connect_to_server(show_message=True):
     except ConnectionRefusedError:
         # Show an error message if connection is refused
         messagebox.showerror("Connection Error", "The server is not started yet. Please start the server first.")
+    except socket.gaierror:
+        # Show an error message for invalid address
+        messagebox.showerror("Connection Error", "The server address is invalid.")
+    except socket.error as e:
+        # Show an error message for any other socket errors
+        messagebox.showerror("Error", f"An error occurred: {str(e)}")
 
 def upload_files():
     """Function to handle file uploads to the server"""

@@ -3,9 +3,10 @@ import threading  # Import threading module to handle multiple clients simultane
 import os  # Import os module for file system operations
 import tkinter as tk  # Import tkinter module for creating the graphical user interface (GUI)
 from tkinter import messagebox  # Import messagebox from tkinter for showing dialog boxes
+from tkinter import Scrollbar  # Import Scrollbar from tkinter for creating scrollbars
 
 # Define default server address and port
-DEFAULT_SERVER_HOST = '0.0.0.0'  # Listen on all available network interfaces
+DEFAULT_SERVER_HOST = '127.0.0.1'  # Listen on all available network interfaces
 DEFAULT_SERVER_PORT = 5001  # Default port to listen on
 BUFFER_SIZE = 4096  # Size of the buffer for receiving data
 SEPARATOR = "<SEPARATOR>"  # Separator used for splitting command strings
@@ -45,6 +46,11 @@ class ServerGUI:
         self.stop_btn = tk.Button(root, text="Stop Server", command=self.stop_server, state=tk.DISABLED)
         # Pack the button with padding
         self.stop_btn.pack(pady=5)
+
+        # Button to show available files
+        self.show_files_btn = tk.Button(root, text="Show Available Files", command=self.show_available_files)
+        # Pack the button with padding
+        self.show_files_btn.pack(pady=5)
 
         # Listbox to display received files
         self.file_listbox = tk.Listbox(root, width=50)
@@ -178,6 +184,25 @@ class ServerGUI:
                     else:
                         # If the file is not found, send error message
                         client_socket.send("File not found".encode())
+                
+                elif command.startswith("DELETE"):
+                    # Split the command to get the filename
+                    _, filename = command.split(SEPARATOR)
+                    # Get the full path of the file
+                    filepath = os.path.join(FILES_DIR, filename)
+                    try:
+                        if os.path.exists(filepath):
+                            # If the file exists, delete it
+                            os.remove(filepath)
+                            # Send success message to the client
+                            client_socket.send(f"{filename} deleted successfully".encode())
+                        else:
+                            # If the file is not found, send error message
+                            client_socket.send("File not found".encode())
+                    except Exception as e:
+                        # Send error message if deletion fails
+                        client_socket.send(f"Error deleting file: {str(e)}".encode())
+                    
         except Exception as e:
             # Print any exceptions
             print(f"Error: {e}")
@@ -244,6 +269,65 @@ class ServerGUI:
         # Print server status
         print("Server stopped.")
 
+    def show_available_files(self):
+        # Create a new window
+        files_window = tk.Toplevel(self.root)
+        files_window.title("Available Files")
+
+        # Create a frame to hold the listbox and scrollbar
+        frame = tk.Frame(files_window)
+        frame.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
+
+        # Create a scrollbar
+        scrollbar = Scrollbar(frame, orient=tk.VERTICAL)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+
+        # Create a listbox to display the files
+        file_listbox = tk.Listbox(frame, width=50, yscrollcommand=scrollbar.set)
+        file_listbox.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+        # Configure the scrollbar
+        scrollbar.config(command=file_listbox.yview)
+
+        # Get the list of files in the directory
+        files = os.listdir(FILES_DIR)
+
+        # Add files to the listbox
+        for file in files:
+            file_listbox.insert(tk.END, file)
+
+        # Handle case when there are no files
+        if not files:
+            file_listbox.insert(tk.END, "No files available")
+
+        # Create a delete button
+        delete_button = tk.Button(files_window, text="Delete Selected File", command=lambda: self.delete_file(file_listbox))
+        delete_button.pack(pady=10)
+
+    def delete_file(self, file_listbox):
+        # Get the selected item in the listbox
+        selection = file_listbox.curselection()
+        if selection:
+            # Get the index of the selected item
+            index = selection[0]
+            # Get the filename from the list
+            filename = file_listbox.get(index)
+            # Get the full path of the file
+            filepath = os.path.join(FILES_DIR, filename)
+            # Confirm deletion
+            response = messagebox.askyesno("Delete File", f"Do you want to delete '{filename}'?")
+            if response:
+                try:
+                    # Delete the file
+                    os.remove(filepath)
+                    # Remove the file from the listbox
+                    file_listbox.delete(index)
+
+                    # Show success message
+                    messagebox.showinfo("Success", f"File '{filename}' deleted successfully.")
+                except Exception as e:
+                    # Show error message if deletion fails
+                    messagebox.showerror("Error", f"Could not delete file '{filename}'.\n{str(e)}")
 
 if __name__ == "__main__":
     # Create the root window
