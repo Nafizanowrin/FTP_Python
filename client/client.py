@@ -12,10 +12,6 @@ SEPARATOR = "<SEPARATOR>"  # Separator used to separate parts of a message
 # Global variable for client socket
 client_socket = None  # Initialize client socket as None
 
-import socket
-import re
-from tkinter import messagebox
-
 def is_valid_ip(ip):
     """Validate an IPv4 address."""
     # Pattern to match IPv4 addresses
@@ -259,16 +255,6 @@ def download_selected_file(filename):
         # Reconnect to the server without showing the connection message
         client_socket.close()
         connect_to_server(show_message=False)
-
-def list_files():
-    """Function to request the list of available files from the server"""
-    global client_socket
-    print("Requesting list of available files...")
-    # Send list files command to the server
-    client_socket.send("LIST_FILES".encode())
-    # Receive response from the server
-    response = client_socket.recv(BUFFER_SIZE).decode()
-    print("Received response from server:", response)
 
 def show_local_files():
     """List and display files in the downloaded files directory."""
