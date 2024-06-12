@@ -6,9 +6,6 @@ import time  # Import the time module to use time-related functions
 import threading  # Import the threading module to handle multiple threads
 import re
 
-# Default server address and port
-DEFAULT_SERVER_HOST = '127.0.0.1'  # Localhost (your computer)
-DEFAULT_SERVER_PORT = 5001  # Port number to connect to the server
 BUFFER_SIZE = 4096  # Buffer size for data transfer
 SEPARATOR = "<SEPARATOR>"  # Separator used to separate parts of a message
 
@@ -253,6 +250,11 @@ def download_selected_file(filename):
     except Exception as e:
         print(f"Error: {e}")
 
+    finally:
+        # Reconnect to the server without showing the connection message
+        client_socket.close()
+        connect_to_server(show_message=False)
+
 def list_files():
     """Function to request the list of available files from the server"""
     global client_socket
@@ -262,6 +264,56 @@ def list_files():
     # Receive response from the server
     response = client_socket.recv(BUFFER_SIZE).decode()
     print("Received response from server:", response)
+
+def show_local_files():
+    """List and display files in the downloaded files directory."""
+    downloaded_files_dir = os.path.join(os.path.dirname(__file__), 'downloaded files')
+
+    # Create the directory if it doesn't exist
+    os.makedirs(downloaded_files_dir, exist_ok=True)
+
+    # List files in the directory
+    local_files = os.listdir(downloaded_files_dir)
+
+    # Create a new window to display the files
+    file_window = tk.Toplevel(app)
+    file_window.title("Local Files")
+
+    # Create a Listbox to show the files
+    file_listbox = tk.Listbox(file_window, selectmode=tk.SINGLE)
+    file_listbox.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
+
+    # Add files to the Listbox
+    for file in local_files:
+        file_listbox.insert(tk.END, file)
+
+    # Add a button to delete the selected file
+    delete_button = tk.Button(file_window, text="Delete Selected File",
+                              command=lambda: delete_local_file(file_listbox))
+    delete_button.pack(padx=10, pady=10)
+
+def delete_local_file(file_listbox):
+    """Delete the selected file from the downloaded files directory and update the list."""
+    downloaded_files_dir = os.path.join(os.path.dirname(__file__), 'downloaded files')
+    selected_files = file_listbox.curselection()
+
+    if not selected_files:
+        messagebox.showwarning("Selection Error", "Please select a file to delete.")
+        return
+
+    try:
+        # Get the selected file name
+        file_to_delete = file_listbox.get(selected_files[0])
+        file_path = os.path.join(downloaded_files_dir, file_to_delete)
+
+        # Delete the file
+        os.remove(file_path)
+
+        # Remove the file from the Listbox
+        file_listbox.delete(selected_files[0])
+        messagebox.showinfo("Success", "File deleted successfully.")
+    except Exception as e:
+        messagebox.showerror("Error", f"An error occurred while deleting the file: {str(e)}")
 
 # Create the main application window
 app = tk.Tk()
@@ -289,6 +341,10 @@ upload_btn.pack(pady=10)
 # Create and place the Download button
 download_btn = tk.Button(app, text="Download File", command=download_file)
 download_btn.pack(pady=10)
+
+# create and place the "Show Available File" button
+show_files_button = tk.Button(app, text="Show Available Files", command=show_local_files)
+show_files_button.pack(pady=10)
 
 # Run the main event loop
 app.mainloop()
