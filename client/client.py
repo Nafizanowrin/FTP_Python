@@ -1,7 +1,7 @@
 import socket  # Import the socket module to enable network communication
 import os  # Import the os module to interact with the operating system
 import tkinter as tk  # Import the tkinter module to create a GUI
-from tkinter import filedialog, messagebox  # Import specific modules from tkinter
+from tkinter import filedialog, messagebox, PhotoImage  # Import specific modules from tkinter
 import time  # Import the time module to use time-related functions
 import threading  # Import the threading module to handle multiple threads
 import re
@@ -335,6 +335,29 @@ def logout():
         connect_btn.config(state=tk.NORMAL)
         logout_btn.config(state=tk.DISABLED)
 
+# Function to create rounded buttons
+def create_rounded_button(canvas, x, y, width, height, text, command=None):
+    bg_color = "#1E90FF"
+    fg_color = "#FFFFFF"
+    active_bg_color = "#1C86EE"
+    radius = 20
+    points = [
+        x + radius, y,
+        x + width - radius, y,
+        x + width, y + radius,
+        x + width, y + height - radius,
+        x + width - radius, y + height,
+        x + radius, y + height,
+        x, y + height - radius,
+        x, y + radius
+    ]
+    button_bg = canvas.create_polygon(points, smooth=True, fill=bg_color, outline=bg_color)
+    button_text = canvas.create_text(x + width / 2, y + height / 2, text=text, fill=fg_color, font=("Helvetica", 12), activefill=active_bg_color)
+
+    if command:
+        canvas.tag_bind(button_bg, "<Button-1>", lambda e: command())
+        canvas.tag_bind(button_text, "<Button-1>", lambda e: command())
+
 
 # Create the main application window
 app = tk.Tk()
@@ -342,6 +365,15 @@ app.title("File Client")
 
 # Set the width of the window
 app.geometry("400x400")
+
+# Get the absolute path to the image
+icon_path = os.path.join(os.path.dirname(__file__), "logo.png")
+
+# Load and set the window icon
+try:
+    app.iconphoto(False, PhotoImage(file=icon_path))
+except Exception as e:
+    print(f"Error loading icon: {e}")
 
 # Create and place the input fields for server IP and port
 tk.Label(app, text="Server IP:").pack()

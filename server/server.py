@@ -2,7 +2,7 @@ import socket  # Import socket module to handle network connections
 import threading  # Import threading module to handle multiple clients simultaneously
 import os  # Import os module for file system operations
 import tkinter as tk  # Import tkinter module for creating the graphical user interface (GUI)
-from tkinter import messagebox  # Import messagebox from tkinter for showing dialog boxes
+from tkinter import messagebox, PhotoImage  # Import messagebox from tkinter for showing dialog boxes
 from tkinter import Scrollbar  # Import Scrollbar from tkinter for creating scrollbars
 
 # Define default server address and port
@@ -14,7 +14,6 @@ SEPARATOR = "<SEPARATOR>"  # Separator used for splitting command strings
 # Directory to store files if the user agrees to download
 FILES_DIR = os.path.join(os.path.dirname(__file__), 'files')  # Path to the 'files' directory
 os.makedirs(FILES_DIR, exist_ok=True)  # Create the directory if it doesn't exist
-
 
 class ServerGUI:
     def __init__(self, root):
@@ -65,6 +64,10 @@ class ServerGUI:
         self.server_socket = None
         # Thread for accepting connections, initially None
         self.accept_thread = None
+
+        # Set the window icon
+        icon_path = os.path.join(os.path.dirname(__file__), "logo.png")
+        root.iconphoto(False, PhotoImage(file=icon_path))
 
     def add_file(self, filename):
         # Add the filename to the listbox
