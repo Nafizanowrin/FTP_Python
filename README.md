@@ -1,1 +1,1 @@
-FTP
+File Transfer Protocol(FTP)
